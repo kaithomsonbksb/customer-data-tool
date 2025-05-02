@@ -1,0 +1,13 @@
+2025-05-02 09:18:08,982 - Data loaded successfully from customer_data.csv.
+2025-05-02 09:18:33,023 - Data loaded successfully from customer_data.csv.
+2025-05-02 09:20:20,194 - Data loaded successfully from customer_data.csv.
+2025-05-02 09:20:23,042 - User selected choice 4.
+2025-05-02 09:20:25,101 - File not found: .
+2025-05-02 09:20:25,102 - Failed to load new file: .
+2025-05-02 09:20:35,570 - User selected choice 1.
+2025-05-02 09:20:35,583 - Displayed loaded data.
+2025-05-02 09:20:39,472 - User selected choice 2.
+2025-05-02 09:20:39,480 - Displayed data statistics.
+2025-05-02 09:20:47,617 - User selected choice 3.
+2025-05-02 09:21:22,416 - Saved trend report to 'trend_report.txt'.
+2025-05-02 09:21:22,416 - Generated trend report.
