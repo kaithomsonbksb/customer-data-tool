@@ -1,6 +1,0 @@
---- Trend Line Information ---
-Slope: 4.632777609885497e-06
-Intercept: -7930.335539437896
-R-squared: 0.015930080416188628
-P-value: 0.7282622726846402
-Standard Error: 1.2873613129198009e-05
