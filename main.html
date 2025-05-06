@@ -1,0 +1,58 @@
+<!-- filepath: /Users/kai.thomson/Desktop/Assignments/uni_VSC/assignment/main.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Analysis Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            font-size: 18px;
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>Data Analysis Tool</h1>
+    <p>You are using the file: <strong>{{ file_name }}</strong></p>
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+    {% if success %}
+        <p class="success">{{ success }}</p>
+    {% endif %}
+    <form action="/" method="POST" enctype="multipart/form-data">
+        <button type="button" onclick="document.getElementById('fileInput').click()">Attach a New File</button>
+        <input type="file" id="fileInput" name="file" style="display: none;" required>
+        <br>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
