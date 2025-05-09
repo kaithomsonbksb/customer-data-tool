@@ -37,6 +37,10 @@
         .success {
             color: green;
         }
+        #fileInput {
+            display: block; /* Make the file input visible */
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -50,7 +54,7 @@
     {% endif %}
     <form action="/" method="POST" enctype="multipart/form-data">
         <button type="button" onclick="document.getElementById('fileInput').click()">Attach a New File</button>
-        <input type="file" id="fileInput" name="file" style="display: none;" required>
+        <input type="file" id="fileInput" name="file" required>
         <br>
         <button type="submit">Submit</button>
     </form>

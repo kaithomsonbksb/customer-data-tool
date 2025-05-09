@@ -2,10 +2,40 @@
 <html>
 <head>
     <title>Statistics</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .links {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .links a {
+            margin: 5px 0;
+        }
+        .back {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Data Statistics</h1>
-    {{ stats|safe }}
-    <a href="/dashboard">Back to Dashboard</a>
+    <h1>Statistics</h1>
+    <div class="links">
+        <a href="/">Home</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/trend">Trend</a>
+    </div>
+    <div class="back">
+        <a href="/dashboard">Back?</a>
+    </div>
+    <h2>Statistics Data</h2>
+    {{ statistics_data|safe }}
 </body>
 </html>
