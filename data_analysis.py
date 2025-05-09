@@ -49,7 +49,7 @@ def dashboard():
     global data
     if data is None:
         return redirect(url_for("home"))
-    return render_template("dashboard.html", data=data.head().to_html())
+    return render_template("dashboard.html", data=data.to_html(index=False))
 
 
 # Route to display statistics
@@ -59,7 +59,7 @@ def statistics():
     if data is None:
         return redirect(url_for("home"))
     stats = data.describe().to_html()
-    return render_template("statistics.html", stats=stats)
+    return render_template("statistics.html", statistics_data=stats)
 
 
 # Route to generate trend report
@@ -70,9 +70,8 @@ def trend():
         return redirect(url_for("home"))
 
     try:
-        # Ensure the Date column is properly converted to timestamps
-        data["Timestamp"] = data["Date"].apply(lambda x: x.timestamp())
-        x = data["Timestamp"]
+        # Perform linear regression using Date as x-axis
+        x = pd.to_datetime(data["Date"]).map(pd.Timestamp.toordinal)
         y = data["PurchaseAmount"]
 
         # Perform linear regression
