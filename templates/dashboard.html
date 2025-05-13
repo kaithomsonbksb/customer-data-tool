@@ -2,10 +2,34 @@
 <html>
 <head>
     <title>Dashboard</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .links {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .links a {
+            margin: 5px 0;
+        }
+
+    </style>
 </head>
 <body>
     <h1>Dashboard</h1>
-    <a href="/statistics">View Statistics</a> | <a href="/trend">Generate Trend Report</a>
+    <div class="links">
+        <a href="/" class="btn btn-primary">Home</a>
+        <a href="/statistics">Show Statistics</a>
+        <a href="/trend">Generate Trend Report</a>
+    </div>
     <h2>Data Preview</h2>
     {{ data|safe }}
 </body>
