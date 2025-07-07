@@ -19,8 +19,7 @@ class DataAnalyzerApp:
         self.setup_ui()
 
     def setup_ui(self):
-        # Create a button row at the top
-        buttons_frame = customtkinter.CTkFrame(self.root)
+        buttons_frame = customtkinter.CTkFrame(self.root) # Create a button row at the top
         buttons_frame.pack(fill="x", pady=10)
         self.upload_btn = customtkinter.CTkButton(
             buttons_frame, text="Upload CSV", command=self.pick_file
@@ -75,13 +74,37 @@ class DataAnalyzerApp:
             messagebox.showerror("Oops", f"Couldn't load the file:\n{err}")
 
     def update_dashboard(self):
-        self.dashboard_output.delete("0.0", customtkinter.END)
+        for widget in self.tab_dashboard.winfo_children():
+            widget.destroy()
         if self.data_frame is not None:
-            self.dashboard_output.insert(
-                customtkinter.END, self.data_frame.to_string(index=False)
-            )
+            df_copy = self.data_frame.copy()
+            if "Date" in df_copy.columns:
+                df_copy["Date"] = df_copy["Date"].apply(
+                    lambda d: pandas.to_datetime(d).strftime("%d/%m/%Y") if pandas.notnull(d) else ""
+                )
+            # Create a frame to center the table
+            table_frame = customtkinter.CTkFrame(self.tab_dashboard)
+            table_frame.place(relx=0.5, rely=0.5, anchor="center")
+            headers = list(df_copy.columns)
+            rows = df_copy.values.tolist()
+            # Table headers
+            for i, head in enumerate(headers):
+                customtkinter.CTkLabel(
+                    table_frame, text=head, font=("Arial", 12, "bold")
+                ).grid(row=0, column=i, padx=10, pady=6, sticky="nsew")
+            # Table body
+            for r_idx, row in enumerate(rows, start=1):
+                for c_idx, val in enumerate(row):
+                    customtkinter.CTkLabel(
+                        table_frame, text=val, font=("Arial", 12)
+                    ).grid(row=r_idx, column=c_idx, padx=10, pady=6, sticky="nsew")
+            # Stretch grid to fill
+            for i in range(len(headers)):
+                table_frame.grid_columnconfigure(i, weight=1)
+            for i in range(len(rows) + 1):
+                table_frame.grid_rowconfigure(i, weight=1)
         else:
-            self.dashboard_output.insert(customtkinter.END, "Still waiting on a CSV...")
+            customtkinter.CTkLabel(self.tab_dashboard, text="Still waiting on a CSV...").place(relx=0.5, rely=0.5, anchor="center")
 
     def update_stats(self):
         for widget in self.tab_stats.winfo_children():
@@ -94,30 +117,45 @@ class DataAnalyzerApp:
                         if idx not in ["count", "min", "max"]:
                             desc.at[idx, col] = ""
                         elif idx in ["min", "max"]:
-                            desc.at[idx, col] = str(desc.at[idx, col])
+                            # Format as day/month/year
+                            try:
+                                date_val = pandas.to_datetime(desc.at[idx, col])
+                                desc.at[idx, col] = date_val.strftime("%d/%m/%Y")
+                            except Exception:
+                                desc.at[idx, col] = str(desc.at[idx, col])
                 elif pandas.api.types.is_numeric_dtype(desc[col]):
                     desc[col] = desc[col].apply(
                         lambda val: f"{val:.2f}" if pandas.notnull(val) else ""
                     )
             headers = ["Stat"] + list(desc.columns)
             rows = list(desc.index)
-            for i, head in enumerate(headers):  # create header labels
+
+            # Create a frame to center the table
+            table_frame = customtkinter.CTkFrame(self.tab_stats)
+            table_frame.place(relx=0.5, rely=0.5, anchor="center")
+
+            # Table headers
+            for i, head in enumerate(headers):
                 customtkinter.CTkLabel(
-                    self.tab_stats, text=head, font=("Arial", 12, "bold")
-                ).grid(row=0, column=i, padx=5, pady=2, sticky="nsew")
-            for r_idx, stat in enumerate(rows, start=1):  # create table body
+                    table_frame, text=head, font=("Arial", 12, "bold")
+                ).grid(row=0, column=i, padx=10, pady=6, sticky="nsew")
+
+            # Table body
+            for r_idx, stat in enumerate(rows, start=1):
                 customtkinter.CTkLabel(
-                    self.tab_stats, text=stat, font=("Arial", 12)
-                ).grid(row=r_idx, column=0, padx=5, pady=2, sticky="nsew")
+                    table_frame, text=stat, font=("Arial", 12)
+                ).grid(row=r_idx, column=0, padx=10, pady=6, sticky="nsew")
                 for c_idx, col in enumerate(desc.columns, start=1):
                     val = desc.at[stat, col]
                     customtkinter.CTkLabel(
-                        self.tab_stats, text=val, font=("Arial", 12)
-                    ).grid(row=r_idx, column=c_idx, padx=5, pady=2, sticky="nsew")
-            for i in range(len(headers)):  # stretch grid to fill
-                self.tab_stats.grid_columnconfigure(i, weight=1)
+                        table_frame, text=val, font=("Arial", 12)
+                    ).grid(row=r_idx, column=c_idx, padx=10, pady=6, sticky="nsew")
+
+            # Stretch grid to fill
+            for i in range(len(headers)):
+                table_frame.grid_columnconfigure(i, weight=1)
             for i in range(len(rows) + 1):
-                self.tab_stats.grid_rowconfigure(i, weight=1)
+                table_frame.grid_rowconfigure(i, weight=1)
         else:
             customtkinter.CTkLabel(self.tab_stats, text="No data loaded yet.").pack(
                 expand=1, fill="both"
@@ -160,12 +198,15 @@ class DataAnalyzerApp:
                     val = widget.get()
                     colname = cols[i]
                     if colname == "Date":
-                        if not re.match(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$", val):
+                        if not re.match(r"^\d{2}/\d{2}/\d{4}$", val):
                             messagebox.showerror(
                                 "Format Error",
-                                f"Date must be in full timestamp format. Got: {val}",
+                                f"Date must be in day/month/year format (dd/mm/yyyy). Got: {val}",
                             )
                             return
+                        # Convert to ISO format for storage
+                        day, month, year = val.split("/")
+                        val = f"{year}-{month}-{day}"
                     else:
                         try:
                             float(val)  # Checking if it's a number
