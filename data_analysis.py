@@ -1,3 +1,4 @@
+import re
 import customtkinter
 from tkinter import filedialog, messagebox
 import pandas
@@ -10,6 +11,7 @@ from scipy.stats import linregress
 
 
 class DataAnalyzerApp:
+
     def __init__(self, root):
         self.root = root
         self.root.title("Data Analysis Tool")
@@ -20,33 +22,25 @@ class DataAnalyzerApp:
         # Create a button row at the top
         buttons_frame = customtkinter.CTkFrame(self.root)
         buttons_frame.pack(fill="x", pady=10)
-
         self.upload_btn = customtkinter.CTkButton(
             buttons_frame, text="Upload CSV", command=self.pick_file
         )
         self.upload_btn.grid(row=0, column=0, padx=10, pady=0, sticky="e")
-
         self.modify_btn = customtkinter.CTkButton(
             buttons_frame, text="Edit Data", command=self.open_editor
         )
         self.modify_btn.grid(row=0, column=1, padx=10, pady=0, sticky="w")
-
         buttons_frame.grid_columnconfigure(0, weight=1)
         buttons_frame.grid_columnconfigure(1, weight=1)
-
-        # Set up the tabs
-        self.tabs = customtkinter.CTkTabview(self.root)
+        self.tabs = customtkinter.CTkTabview(self.root)  # Set up the tabs
         self.tabs.pack(expand=1, fill="both")
-
         self.tab_dashboard = self.tabs.add("Dashboard")
         self.dashboard_output = customtkinter.CTkTextbox(
             self.tab_dashboard, wrap="none", height=400, width=800
         )
         self.dashboard_output.pack(expand=1, fill="both")
         self.dashboard_output.insert("0.0", "Upload a CSV file to get started...\n")
-
         self.tab_stats = self.tabs.add("Statistics")
-
         self.tab_trend = self.tabs.add("Trend")
         self.trend_canvas = None
         self.trend_note = customtkinter.CTkLabel(self.tab_trend, text="")
@@ -62,25 +56,21 @@ class DataAnalyzerApp:
             return
         try:
             df = pandas.read_csv(file)
-            # Quick sanity check on required columns
-            if "Date" not in df.columns or "PurchaseAmount" not in df.columns:
+            if (
+                "Date" not in df.columns or "PurchaseAmount" not in df.columns
+            ):  # sanity check for required columns
                 raise ValueError(
                     "Missing columns: Expecting 'Date' and 'PurchaseAmount'."
                 )
-
             df["Date"] = pandas.to_datetime(df["Date"], errors="coerce")
             if df["Date"].isnull().any():
                 raise ValueError("Some dates couldn't be parsed properly.")
-
             self.data_frame = df
             self.update_dashboard()
             self.update_stats()
             self.trend_note.configure(text="")
-
-            # If there's an old canvas, get rid of it
-            if self.trend_canvas:
+            if self.trend_canvas:  # is theres an old canvas, get rid of it
                 self.trend_canvas.get_tk_widget().pack_forget()
-
         except Exception as err:
             messagebox.showerror("Oops", f"Couldn't load the file:\n{err}")
 
@@ -96,12 +86,9 @@ class DataAnalyzerApp:
     def update_stats(self):
         for widget in self.tab_stats.winfo_children():
             widget.destroy()
-
         if self.data_frame is not None:
             desc = self.data_frame.describe(include="all")
-
-            # Handle Date separately
-            for col in desc.columns:
+            for col in desc.columns:  # handle Date separately
                 if col == "Date":
                     for idx in desc.index:
                         if idx not in ["count", "min", "max"]:
@@ -112,33 +99,25 @@ class DataAnalyzerApp:
                     desc[col] = desc[col].apply(
                         lambda val: f"{val:.2f}" if pandas.notnull(val) else ""
                     )
-
             headers = ["Stat"] + list(desc.columns)
             rows = list(desc.index)
-
-            # Table headers
-            for i, head in enumerate(headers):
+            for i, head in enumerate(headers):  # create header labels
                 customtkinter.CTkLabel(
                     self.tab_stats, text=head, font=("Arial", 12, "bold")
                 ).grid(row=0, column=i, padx=5, pady=2, sticky="nsew")
-
-            # Table body
-            for r_idx, stat in enumerate(rows, start=1):
-                customtkinter.CTkLabel(self.tab_stats, text=stat, font=("Arial", 12)).grid(
-                    row=r_idx, column=0, padx=5, pady=2, sticky="nsew"
-                )
+            for r_idx, stat in enumerate(rows, start=1):  # create table body
+                customtkinter.CTkLabel(
+                    self.tab_stats, text=stat, font=("Arial", 12)
+                ).grid(row=r_idx, column=0, padx=5, pady=2, sticky="nsew")
                 for c_idx, col in enumerate(desc.columns, start=1):
                     val = desc.at[stat, col]
-                    customtkinter.CTkLabel(self.tab_stats, text=val, font=("Arial", 12)).grid(
-                        row=r_idx, column=c_idx, padx=5, pady=2, sticky="nsew"
-                    )
-
-            # Stretch grid to fill
-            for i in range(len(headers)):
+                    customtkinter.CTkLabel(
+                        self.tab_stats, text=val, font=("Arial", 12)
+                    ).grid(row=r_idx, column=c_idx, padx=5, pady=2, sticky="nsew")
+            for i in range(len(headers)):  # stretch grid to fill
                 self.tab_stats.grid_columnconfigure(i, weight=1)
             for i in range(len(rows) + 1):
                 self.tab_stats.grid_rowconfigure(i, weight=1)
-
         else:
             customtkinter.CTkLabel(self.tab_stats, text="No data loaded yet.").pack(
                 expand=1, fill="both"
@@ -148,26 +127,20 @@ class DataAnalyzerApp:
         if self.data_frame is None:
             messagebox.showinfo("Wait", "Please upload a CSV before editing.")
             return
-
         editor = customtkinter.CTkToplevel(self.root)
         editor.title("Edit Data")
         editor.geometry("550x500")
-
         edit_panel = customtkinter.CTkFrame(editor)
         edit_panel.pack(padx=10, pady=10, fill="both", expand=True)
-
         cols = list(self.data_frame.columns)
         row_widgets = []
-
         customtkinter.CTkLabel(
             edit_panel, text="Edit Data Table", font=("Arial", 14, "bold")
         ).grid(row=0, column=0, columnspan=len(cols), pady=(0, 10))
-
         for c_idx, name in enumerate(cols):
-            customtkinter.CTkLabel(edit_panel, text=name, font=("Arial", 12, "bold")).grid(
-                row=1, column=c_idx, padx=5, pady=2
-            )
-
+            customtkinter.CTkLabel(
+                edit_panel, text=name, font=("Arial", 12, "bold")
+            ).grid(row=1, column=c_idx, padx=5, pady=2)
         for r_idx, data_row in enumerate(
             self.data_frame.itertuples(index=False), start=2
         ):
@@ -187,8 +160,6 @@ class DataAnalyzerApp:
                     val = widget.get()
                     colname = cols[i]
                     if colname == "Date":
-                        import re
-
                         if not re.match(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$", val):
                             messagebox.showerror(
                                 "Format Error",
@@ -197,7 +168,7 @@ class DataAnalyzerApp:
                             return
                     else:
                         try:
-                            float(val)  # Checking
+                            float(val)  # Checking if it's a number
                         except ValueError:
                             messagebox.showerror(
                                 "Bad Input",
@@ -206,16 +177,15 @@ class DataAnalyzerApp:
                             return
                     current_row.append(val)
                 updated_rows.append(current_row)
-
             self.data_frame = pandas.DataFrame(updated_rows, columns=cols)
             messagebox.showinfo("Saved", "Changes saved successfully!")
             editor.destroy()
             self.update_dashboard()
             self.update_stats()
 
-        customtkinter.CTkButton(edit_panel, text="Save Changes", command=commit_changes).grid(
-            row=len(row_widgets) + 2, column=0, columnspan=len(cols), pady=10
-        )
+        customtkinter.CTkButton(
+            edit_panel, text="Save Changes", command=commit_changes
+        ).grid(row=len(row_widgets) + 2, column=0, columnspan=len(cols), pady=10)
 
     def render_trend_plot(self):
         if self.data_frame is None:
@@ -223,7 +193,9 @@ class DataAnalyzerApp:
             return
 
         try:
-            x_vals = pandas.to_datetime(self.data_frame["Date"]).map(pandas.Timestamp.toordinal)
+            x_vals = pandas.to_datetime(self.data_frame["Date"]).map(
+                pandas.Timestamp.toordinal
+            )
             y_vals = self.data_frame["PurchaseAmount"]
 
             slope, intercept, r_val, _, _ = linregress(x_vals, y_vals)
