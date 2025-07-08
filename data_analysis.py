@@ -19,7 +19,9 @@ class DataAnalyzerApp:
         self.setup_ui()
 
     def setup_ui(self):
-        buttons_frame = customtkinter.CTkFrame(self.root) # Create a button row at the top
+        buttons_frame = customtkinter.CTkFrame(
+            self.root
+        )  # Create a button row at the top
         buttons_frame.pack(fill="x", pady=10)
         self.upload_btn = customtkinter.CTkButton(
             buttons_frame, text="Upload CSV", command=self.pick_file
@@ -80,7 +82,11 @@ class DataAnalyzerApp:
             df_copy = self.data_frame.copy()
             if "Date" in df_copy.columns:
                 df_copy["Date"] = df_copy["Date"].apply(
-                    lambda d: pandas.to_datetime(d).strftime("%d/%m/%Y") if pandas.notnull(d) else ""
+                    lambda d: (
+                        pandas.to_datetime(d).strftime("%d/%m/%Y")
+                        if pandas.notnull(d)
+                        else ""
+                    )
                 )
             # Create a frame to center the table
             table_frame = customtkinter.CTkFrame(self.tab_dashboard)
@@ -104,7 +110,9 @@ class DataAnalyzerApp:
             for i in range(len(rows) + 1):
                 table_frame.grid_rowconfigure(i, weight=1)
         else:
-            customtkinter.CTkLabel(self.tab_dashboard, text="Still waiting on a CSV...").place(relx=0.5, rely=0.5, anchor="center")
+            customtkinter.CTkLabel(
+                self.tab_dashboard, text="Still waiting on a CSV..."
+            ).place(relx=0.5, rely=0.5, anchor="center")
 
     def update_stats(self):
         for widget in self.tab_stats.winfo_children():
@@ -142,9 +150,9 @@ class DataAnalyzerApp:
 
             # Table body
             for r_idx, stat in enumerate(rows, start=1):
-                customtkinter.CTkLabel(
-                    table_frame, text=stat, font=("Arial", 12)
-                ).grid(row=r_idx, column=0, padx=10, pady=6, sticky="nsew")
+                customtkinter.CTkLabel(table_frame, text=stat, font=("Arial", 12)).grid(
+                    row=r_idx, column=0, padx=10, pady=6, sticky="nsew"
+                )
                 for c_idx, col in enumerate(desc.columns, start=1):
                     val = desc.at[stat, col]
                     customtkinter.CTkLabel(
